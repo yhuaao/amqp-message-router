@@ -1,0 +1,18 @@
+{
+    "name": "amqp-message/router",
+    "autoload": {
+        "psr-4": {
+            "AMQPRouter\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "msg-router",
+            "email": "null@qq.com"
+        }
+    ],
+    "require": {
+        "hyperf/amqp": "^2.2.~",
+        "hyperf/di": "^2.2.~"
+    }
+}

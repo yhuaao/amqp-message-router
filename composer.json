@@ -11,8 +11,33 @@
             "email": "null@qq.com"
         }
     ],
+    "description": "A amqplib for hyperf.",
+    "license": "MIT",
+    "keywords": [
+        "php",
+        "hyperf",
+        "amqp-router"
+    ],
+    "homepage": "http://www.test.cn",
+    "support": {
+        "docs": "http://www.test.cn",
+        "issues": "http://www.test.cn",
+        "pull-request": "http://www.test.cn",
+        "source": "http://www.test.cn"
+    },
     "require": {
+        "php": ">=7.2",
         "hyperf/amqp": "^2.2.*",
-        "hyperf/di": "^2.2.*"
+        "php-amqplib/php-amqplib": "^3.0",
+        "psr/container": "^1.0|^2.0",
+        "psr/event-dispatcher": "^1.0",
+        "psr/log": "^1.0|^2.0|^3.0"
+    },
+    "suggest": {
+        "hyperf/di": "Required to use annotations.",
+        "hyperf/event": "Declare queue and start consumers automatically."
+    },
+    "config": {
+        "sort-packages": true
     }
 }

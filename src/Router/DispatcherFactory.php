@@ -93,6 +93,10 @@ class DispatcherFactory
                 $dispatched = ApplicationContext::getContainer()->get(Dispatched::class);
                 $retry_num = ParseMessage::getRuntimeRetryNum($AMQPmessage);
                 return $dispatched->dispatchedHandleFailedMessage($retry_num, $message, $e);
+            case $e instanceof Exception:
+                ApplicationContext::getContainer()->get(EventDispatcherInterface::class)
+                    ->dispatch(new AMQPMessageIgnoreHandleEvent($message, $e));
+                return Result::DROP;  //丢进失败队列
         }
         return Result::DROP;
     }

@@ -72,11 +72,29 @@ class RouteCollector
     {
         $middlewareClassAnnotation = AnnotationCollector::getClassesByAnnotation(AMQPMiddleware::class);
 //通过控制器，获取middleware
-        $controllerMiddlewares = $middlewareClassAnnotation[$controllerClassName]->middlewares;
-        if (is_array($controllerMiddlewares)) {
-            //处理middleware数组,没有继承中间件接口，抛出异常
-            foreach ($controllerMiddlewares as $controllerMiddleware) {
-                //反射
+        if (isset($middlewareClassAnnotation[$controllerClassName])) {
+            $controllerMiddlewares = $middlewareClassAnnotation[$controllerClassName]->middlewares;
+            if (is_array($controllerMiddlewares)) {
+                //处理middleware数组,没有继承中间件接口，抛出异常
+                foreach ($controllerMiddlewares as $controllerMiddleware) {
+                    //反射
+                    $middlewareRefl = ReflectionManager::reflectClass($controllerMiddleware);
+                    if (!$middlewareRefl->implementsInterface(AMQPMiddlewareInterface::class)) {
+                        throw new \Exception($controllerMiddleware . ' must be implements AMQPMiddlewareInterface');
+                    }
+                    //实例化,触发
+                    try {
+                        $result = make($controllerMiddleware)->handle($message);
+                        if (!$result) {
+                            throw new AMQPMessageHandleFailedException($controllerMiddleware . ' middleware failed');
+                        }
+                    } catch (\Exception $e) {
+                        throw new AMQPMessageHandleFailedException($e->getMessage());
+                    }
+                }
+            } else if (is_string($controllerMiddlewares)) {
+                $controllerMiddleware = $controllerMiddlewares;
+                //处理middleware字符串
                 $middlewareRefl = ReflectionManager::reflectClass($controllerMiddleware);
                 if (!$middlewareRefl->implementsInterface(AMQPMiddlewareInterface::class)) {
                     throw new \Exception($controllerMiddleware . ' must be implements AMQPMiddlewareInterface');
@@ -91,23 +109,8 @@ class RouteCollector
                     throw new AMQPMessageHandleFailedException($e->getMessage());
                 }
             }
-        } else if (is_string($controllerMiddlewares)) {
-            $controllerMiddleware = $controllerMiddlewares;
-            //处理middleware字符串
-            $middlewareRefl = ReflectionManager::reflectClass($controllerMiddleware);
-            if (!$middlewareRefl->implementsInterface(AMQPMiddlewareInterface::class)) {
-                throw new \Exception($controllerMiddleware . ' must be implements AMQPMiddlewareInterface');
-            }
-            //实例化,触发
-            try {
-                $result = make($controllerMiddleware)->handle($message);
-                if (!$result) {
-                    throw new AMQPMessageHandleFailedException($controllerMiddleware . ' middleware failed');
-                }
-            } catch (\Exception $e) {
-                throw new AMQPMessageHandleFailedException($e->getMessage());
-            }
         }
+
     }
 
     /**
@@ -123,12 +126,30 @@ class RouteCollector
             $classmethodArr[$classMethodIndex] = $middlewareM['annotation']->middlewares;
         }
         //获取methodMiddleware
-        $methodMiddlewares = $classmethodArr[$controllerClassName . '.' . $actionMethodName];
-        //判断，顺序执行method-middleware
-        if (is_array($methodMiddlewares)) {
-            //处理middleware数组,没有继承中间件接口，抛出异常
-            foreach ($methodMiddlewares as $methodMiddleware) {
-                //反射
+        if (isset($classmethodArr[$controllerClassName . '.' . $actionMethodName])) {
+            $methodMiddlewares = $classmethodArr[$controllerClassName . '.' . $actionMethodName];
+            //判断，顺序执行method-middleware
+            if (is_array($methodMiddlewares)) {
+                //处理middleware数组,没有继承中间件接口，抛出异常
+                foreach ($methodMiddlewares as $methodMiddleware) {
+                    //反射
+                    $middlewareRefl = ReflectionManager::reflectClass($methodMiddleware);
+                    if (!$middlewareRefl->implementsInterface(AMQPMiddlewareInterface::class)) {
+                        throw new IgnoreAMQPMessageException($methodMiddleware . ' must be implements AMQPMiddlewareInterface');
+                    }
+                    //实例化,触发
+                    try {
+                        $result = make($methodMiddleware)->handle($message);
+                        if (!$result) {
+                            throw new AMQPMessageHandleFailedException($methodMiddleware . ' middleware failed');
+                        }
+                    } catch (\Exception $e) {
+                        throw new AMQPMessageHandleFailedException($e->getMessage());
+                    }
+                }
+            } else if (is_string($methodMiddlewares)) {
+                $methodMiddleware = $methodMiddlewares;
+                //处理middleware字符串
                 $middlewareRefl = ReflectionManager::reflectClass($methodMiddleware);
                 if (!$middlewareRefl->implementsInterface(AMQPMiddlewareInterface::class)) {
                     throw new IgnoreAMQPMessageException($methodMiddleware . ' must be implements AMQPMiddlewareInterface');
@@ -143,23 +164,8 @@ class RouteCollector
                     throw new AMQPMessageHandleFailedException($e->getMessage());
                 }
             }
-        } else if (is_string($methodMiddlewares)) {
-            $methodMiddleware = $methodMiddlewares;
-            //处理middleware字符串
-            $middlewareRefl = ReflectionManager::reflectClass($methodMiddleware);
-            if (!$middlewareRefl->implementsInterface(AMQPMiddlewareInterface::class)) {
-                throw new IgnoreAMQPMessageException($methodMiddleware . ' must be implements AMQPMiddlewareInterface');
-            }
-            //实例化,触发
-            try {
-                $result = make($methodMiddleware)->handle($message);
-                if (!$result) {
-                    throw new AMQPMessageHandleFailedException($methodMiddleware . ' middleware failed');
-                }
-            } catch (\Exception $e) {
-                throw new AMQPMessageHandleFailedException($e->getMessage());
-            }
         }
+
     }
 
 

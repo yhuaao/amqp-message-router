@@ -63,6 +63,9 @@ class DispatcherFactory
         try {
             ApplicationContext::getContainer()->get($controllerClassName)->$actionMethodName($AMQPmessage, $message);
             //消息处理成功
+            if (isset($message['status'])) {
+                $message['status'] = 1;
+            }
             ApplicationContext::getContainer()->get(EventDispatcherInterface::class)
                 ->dispatch(new AMQPMessageHandleSuccessEvent($message));
         } catch (Exception $e) {

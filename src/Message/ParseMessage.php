@@ -64,6 +64,10 @@ class ParseMessage
         if (!isset($data['queue'])) {
             $data['queue'] = $queue;
         }
+        //设置接收时间
+        if (!isset($data['receive_time'])) {
+            $data['receive_time'] = date("Y-m-d H:i:s", time());
+        }
     }
 
 

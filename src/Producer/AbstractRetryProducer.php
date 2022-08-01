@@ -13,7 +13,7 @@ use PhpAmqpLib\Wire\AMQPTable;
  */
 class AbstractRetryProducer extends ProducerMessage
 {
-    protected $type = Type::TOPIC;
+    protected string $type = Type::TOPIC;
 
     public function __construct($data, int $count = 1)
     {

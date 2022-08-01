@@ -22,7 +22,7 @@ use PhpAmqpLib\Message\AMQPMessage;
 abstract class AbstractCommonConsumer extends ConsumerMessage
 {
     protected int $maxRetry = 3;
-    protected $requeue = true;
+    protected bool $requeue = true;
 
     /**
      * mq-consumer-代码

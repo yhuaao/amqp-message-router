@@ -175,22 +175,5 @@ abstract class AbstractCommonConsumer extends ConsumerMessage
         return $data;
     }
 
-    /**
-     * 发送邮件
-     */
-    protected function sendQueueManageEmail(string $error): void
-    {
-        $manages = config('queue_manage_email');
-        //进入邮件发送队列
-        foreach ($manages as $manage) {
-            dump($manage . 'send_email');
-            QueueUtil::getInstance()->push(MailerJob::class, [
-                'subject' => 'scigo-queue-failed',
-                'text'    => $error,
-                'email'   => $manage
-            ]);
-        }
 
-
-    }
 }

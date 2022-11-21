@@ -11,7 +11,7 @@ use Hyperf\Amqp\Result;
 use Hyperf\Utils\ApplicationContext;
 use PhpAmqpLib\Message\AMQPMessage;
 
-abstract class AbstractCommonConsumer extends ConsumerMessage
+abstract class AbstractConsumer extends ConsumerMessage
 {
     protected int $maxRetry = 3;
     protected bool $requeue = true;

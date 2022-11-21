@@ -20,10 +20,12 @@ class AMQPMessageBuilder
             'queue' => $data['queue'],
             'action' => $data['action'],
             'send_time' => date('Y-m-d H:i:s', time()),
-            'receive_time' => null,
+            'receive_time' => $data['receive_time'] ?? null,
             'from' => $data['admin'] ?? '',
             'to' => 'queue',
             'data' => $data['data'],
+            'status' => $data['status'] ?? 0,
+            'error' => $data['error'] ?? null
         ];
         return $data;
     }

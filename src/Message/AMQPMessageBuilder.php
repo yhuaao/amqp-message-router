@@ -16,7 +16,7 @@ class AMQPMessageBuilder
             throw new \Exception('请设置data');
         }
         $data = [
-            'uuid' => md5(uniqid() . microtime() . rand(1, 99999) . Coroutine::getCid(), true),
+            'uuid' => substr(md5(uniqid() . microtime() . rand(1, 99999) . Coroutine::getCid()), 8, 16),
             'queue' => $data['queue'],
             'action' => $data['action'],
             'send_time' => date('Y-m-d H:i:s', time()),

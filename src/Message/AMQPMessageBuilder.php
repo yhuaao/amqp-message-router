@@ -21,7 +21,7 @@ class AMQPMessageBuilder
             'action' => $data['action'],
             'send_time' => date('Y-m-d H:i:s', time()),
             'receive_time' => $data['receive_time'] ?? null,
-            'from' => $data['from'] ?? '',
+            'from' => $data['from'] ?? 'admin',
             'to' => 'queue',
             'data' => $data['data'],
             'status' => $data['status'] ?? 0,

@@ -4,6 +4,7 @@ namespace AMQPRouter\Message;
 
 use AMQPRouter\Event\AMQPMessageIsSuccessFulEvent;
 use AMQPRouter\Exception\IgnoreAMQPMessageException;
+use Hyperf\Config\ConfigFactory;
 use Hyperf\Utils\ApplicationContext;
 use PhpAmqpLib\Message\AMQPMessage;
 use Psr\EventDispatcher\EventDispatcherInterface;
@@ -68,22 +69,25 @@ class ParseMessage
 
 
     /**
-     * 通过AMQPMessage 获取执行次数
-     * @param AMQPMessage $message
+     * 从body中获取 获取执行次数
+     * @param array $message
      * @return int
      */
-    public static function getRuntimeRetryNum(AMQPMessage $AMQPmessage): int
+    public static function getRuntimeRetryNum(array $message): int
     {
-        if (!$AMQPmessage->has('application_headers')) {
-            return 0;
-        }
-        $header = $AMQPmessage->get('application_headers');
-        $properties = $header->getNativeData() ?? null;
-        if (empty($properties)) {
-            return 0;
-        }
-        $retry_num = $properties['retry'] ?? 0;
-        return $retry_num;
+        return $message['retry'] ?? 0;
+//        dump($AMQPmessage->get_properties());
+////        if (!$AMQPmessage->has('application_headers')) {
+////            return 0;
+////        }
+//        $header = $AMQPmessage->get('application_headers');
+//        $properties = $header->getNativeData() ?? null;
+//        dd($properties);
+//        if (empty($properties)) {
+//            return 0;
+//        }
+//        $retry_num = $properties['retry'] ?? 0;
+//        return $retry_num;
     }
 
     public static function appendErrorAttribute(array &$message, string $err)
@@ -98,5 +102,22 @@ class ParseMessage
     public static function appendRetryAttribute(array &$message, int $retry_num)
     {
         $message['retry'] = $retry_num;
+    }
+
+    /**
+     * @param int $retry_num
+     * @return int
+     * 1-5 ，2-30 ，3-60
+     */
+    public static function getAfterExecTime(int $retry_num): int
+    {
+        if (!empty(config('amqp.default.retry'))) {
+            $config = config('amqp.default.retry');
+        } else {
+            $config = [
+                5, 30, 60
+            ];
+        }
+        return $config[$retry_num - 1] ?? end($config);
     }
 }

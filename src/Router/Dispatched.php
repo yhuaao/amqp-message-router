@@ -8,8 +8,6 @@ use AMQPRouter\Event\AMQPMessageRetryHandleEvent;
 use AMQPRouter\Event\AMQPMessageRetryHandleFailedEvent;
 use AMQPRouter\Exception\IgnoreAMQPMessageException;
 use AMQPRouter\Message\ParseMessage;
-use App\Amqp\Producer\SCIGO\Task\TaskRetryProducer;
-use App\Amqp\Producer\SCIGO\User\UserRetryProducer;
 use Hyperf\Amqp\Producer;
 use Hyperf\Amqp\Result;
 use Hyperf\Utils\ApplicationContext;
@@ -39,15 +37,13 @@ class Dispatched
     }
 
 
-    public function msgMappingAMQPRouter(array $AMQPClassMethods, string $routeAMQP):array
+    public function msgMappingAMQPRouter(array $AMQPClassMethods, string $routeAMQP): array
     {
         if (!isset($AMQPClassMethods[$routeAMQP])) {
             throw new IgnoreAMQPMessageException($routeAMQP . ' is not register');
         }
-        return  $AMQPClassMethods[$routeAMQP];
+        return $AMQPClassMethods[$routeAMQP];
     }
-
-
 
 
     /******************************分发异常********************************/
@@ -70,9 +66,10 @@ class Dispatched
             ParseMessage::appendErrorAttribute($message, $e->getMessage());
             $retry_num++;
             ParseMessage::appendRetryAttribute($message, $retry_num);
-            //开始进入重试队列逻辑
+            //开始进入重试队列逻辑 1:5 2:30 3:60
+            $after_time = ParseMessage::getAfterExecTime($retry_num);
             $result = ApplicationContext::getContainer()->get(Producer::class)
-                ->produce(new $queueAttributeContext['retryProducer']($message, $retry_num)
+                ->produce(new $queueAttributeContext['retryProducer']($message, $after_time)
                     , true, 3);
             //触发事件
             if ($result) {
@@ -80,7 +77,7 @@ class Dispatched
                     ->dispatch(new AMQPMessageRetryHandleEvent($message));
                 return Result::ACK;
             }
-        }else{
+        } else {
             //没有重试队列直接，监听重试失败队列
             ApplicationContext::getContainer()->get(EventDispatcherInterface::class)
                 ->dispatch(new AMQPMessageRetryHandleFailedEvent($message, $e));

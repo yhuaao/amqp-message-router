@@ -4,6 +4,7 @@ namespace AMQPRouter\Consumer;
 
 
 use AMQPRouter\Context\QueueAttributeContext;
+use AMQPRouter\Exception\IgnoreAMQPMessageException;
 use AMQPRouter\Message\ParseMessage;
 use AMQPRouter\Router\DispatcherFactory;
 use Hyperf\Amqp\Message\ConsumerMessage;

@@ -66,6 +66,9 @@ class DispatcherFactory
             ApplicationContext::getContainer()->get(EventDispatcherInterface::class)
                 ->dispatch(new AMQPMessageHandleSuccessEvent($message));
         } catch (Exception $e) {
+            if($e instanceof IgnoreAMQPMessageException){
+                throw new IgnoreAMQPMessageException($e->getMessage());
+            }
             throw new AMQPMessageHandleFailedException(
                 $e->getMessage()
 //                'file:' . $e->getFile()   .
@@ -91,7 +94,7 @@ class DispatcherFactory
                 ApplicationContext::getContainer()->get(EventDispatcherInterface::class)
                     ->dispatch(new AMQPMessageHandleFailedEvent($message, $e));
                 $dispatched = ApplicationContext::getContainer()->get(Dispatched::class);
-                $retry_num = ParseMessage::getRuntimeRetryNum($AMQPmessage);
+                $retry_num = ParseMessage::getRuntimeRetryNum($message);
                 return $dispatched->dispatchedHandleFailedMessage($retry_num, $message, $e);
             case $e instanceof Exception:
                 ApplicationContext::getContainer()->get(EventDispatcherInterface::class)

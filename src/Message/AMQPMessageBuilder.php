@@ -6,6 +6,11 @@ use Swoole\Coroutine;
 
 class AMQPMessageBuilder
 {
+    /**
+     * @param array $data
+     * @return array
+     * @throws \Exception
+     */
     public function builder(array $data): array
     {
         if (!isset($data['queue'])) {
